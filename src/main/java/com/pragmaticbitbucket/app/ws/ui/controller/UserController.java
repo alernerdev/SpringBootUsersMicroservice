@@ -31,7 +31,6 @@ public class UserController {
         return "Users working...";
     }
 
-
     @GetMapping
     // when required=false, does not work with primitive datatypes since they cant be NULL
     public String getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
