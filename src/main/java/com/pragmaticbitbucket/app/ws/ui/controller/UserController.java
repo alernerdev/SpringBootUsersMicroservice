@@ -1,11 +1,12 @@
 package com.pragmaticbitbucket.app.ws.ui.controller;
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.pragmaticbitbucket.app.ws.exceptions.UserServiceException;
+import com.pragmaticbitbucket.app.ws.shared.UserDto;
 import com.pragmaticbitbucket.app.ws.ui.model.request.UpdateUserDetailsRequestModel;
 import com.pragmaticbitbucket.app.ws.ui.model.request.UserDetailsRequestModel;
-import com.pragmaticbitbucket.app.ws.ui.model.response.UserRest;
+import com.pragmaticbitbucket.app.ws.ui.model.response.UserDetailsResponseModel;
 import com.pragmaticbitbucket.app.ws.userservice.UserService;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,16 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import java.awt.*;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("users")
 public class UserController {
 
-    Map<String, UserRest> users;
+    Map<String, UserDetailsResponseModel> users;
 
     @Autowired
     UserService userService;
@@ -32,6 +30,7 @@ public class UserController {
     public String status() {
         return "Users working...";
     }
+
 
     @GetMapping
     // when required=false, does not work with primitive datatypes since they cant be NULL
@@ -45,20 +44,26 @@ public class UserController {
             path = "/{publicUserId}",
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
-    public ResponseEntity<UserRest> getUser(@PathVariable String publicUserId) {
+    public ResponseEntity<UserDetailsResponseModel> getUser(@PathVariable String publicUserId) {
         if (users.containsKey(publicUserId))
-            return new ResponseEntity<UserRest>(users.get(publicUserId), HttpStatus.OK);
+            return new ResponseEntity<UserDetailsResponseModel>(users.get(publicUserId), HttpStatus.OK);
         else
-            return new ResponseEntity<UserRest>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<UserDetailsResponseModel>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping(
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
             consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
-    public ResponseEntity<UserRest> createUser(@Valid @RequestBody UserDetailsRequestModel userDetails) {
-        UserRest returnValue = userService.createUser(userDetails);
-        return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
+    public ResponseEntity<UserDetailsResponseModel> createUser(@Valid @RequestBody UserDetailsRequestModel userDetails) {
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        UserDto userDto = modelMapper.map(userDetails, UserDto.class);
+        UserDto createdUser = userService.createUser(userDto);
+
+        UserDetailsResponseModel returnValue = modelMapper.map(createdUser, UserDetailsResponseModel.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(returnValue); // 201 created
     }
 
     @PutMapping(
@@ -66,8 +71,8 @@ public class UserController {
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
             consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
-    public UserRest updateUser(@PathVariable String userId, @Valid @RequestBody UpdateUserDetailsRequestModel userDetails) {
-        UserRest storedUserDetails = users.get(userId);
+    public UserDetailsResponseModel updateUser(@PathVariable String userId, @Valid @RequestBody UpdateUserDetailsRequestModel userDetails) {
+        UserDetailsResponseModel storedUserDetails = users.get(userId);
         storedUserDetails.setFirstName(userDetails.getFirstName());
         storedUserDetails.setLastName(userDetails.getLastName());
         return storedUserDetails;

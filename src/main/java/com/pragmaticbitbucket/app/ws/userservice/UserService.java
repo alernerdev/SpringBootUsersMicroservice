@@ -1,8 +1,7 @@
 package com.pragmaticbitbucket.app.ws.userservice;
 
-import com.pragmaticbitbucket.app.ws.ui.model.request.UserDetailsRequestModel;
-import com.pragmaticbitbucket.app.ws.ui.model.response.UserRest;
+import com.pragmaticbitbucket.app.ws.shared.UserDto;
 
 public interface UserService {
-    UserRest createUser(UserDetailsRequestModel userDetails);
+    UserDto createUser(UserDto userDetails);
 }

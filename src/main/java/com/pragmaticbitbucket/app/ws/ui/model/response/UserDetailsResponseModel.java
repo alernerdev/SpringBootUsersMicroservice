@@ -1,10 +1,10 @@
 package com.pragmaticbitbucket.app.ws.ui.model.response;
 
-public class UserRest {
+public class UserDetailsResponseModel {
     private String firstName;
     private String lastName;
     private String email;
-    private String userId;
+    private String userId; // public userid
 
     public String getFirstName() {
         return firstName;
