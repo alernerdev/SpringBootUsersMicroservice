@@ -12,13 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.core.env.Environment;
 
 import javax.validation.Valid;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 public class UserController {
 
     Map<String, UserDetailsResponseModel> users;
@@ -26,9 +27,14 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    Environment env;
+
     @GetMapping("/status/check")
     public String status() {
-        return "Users working...";
+        return "Users working on port " +
+                env.getProperty("local.server.port") +
+                ", with token=" + env.getProperty("token.secret");
     }
 
     @GetMapping

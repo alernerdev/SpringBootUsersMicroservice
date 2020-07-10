@@ -43,7 +43,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 new AuthenticationFilter(userService, environment, authenticationManager());
 
         // this changes default Spring login method
-        authenticationFilter.setFilterProcessesUrl(environment.getProperty(("login.url.path")));
+        String loginUrlPath = environment.getProperty("login.url.path");
+        authenticationFilter.setFilterProcessesUrl(loginUrlPath);
         return authenticationFilter;
     }
 
