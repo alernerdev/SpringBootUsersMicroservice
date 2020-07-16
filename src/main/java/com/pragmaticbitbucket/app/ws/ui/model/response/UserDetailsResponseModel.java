@@ -1,10 +1,21 @@
 package com.pragmaticbitbucket.app.ws.ui.model.response;
 
+import java.util.List;
+
 public class UserDetailsResponseModel {
     private String firstName;
     private String lastName;
     private String email;
     private String userId; // public userid
+    private List<AlbumsResponseModel> albums;
+
+    public List<AlbumsResponseModel> getAlbums() {
+        return albums;
+    }
+
+    public void setAlbums(List<AlbumsResponseModel> albums) {
+        this.albums = albums;
+    }
 
     public String getFirstName() {
         return firstName;

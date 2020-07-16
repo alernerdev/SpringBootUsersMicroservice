@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.core.env.Environment;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -30,6 +32,16 @@ public class MobileAppWsApplication {
     @Bean
     public String printPropertyValue() {
         System.out.println("Property token.secret has value: " + environment.getProperty("token.secret"));
+        System.out.println("Datasource name has value: " + environment.getProperty("spring.datasource.username"));
+        System.out.println("Datasource password has value: " + environment.getProperty("spring.datasource.password"));
+        System.out.println("Datasource url has value: " + environment.getProperty("spring.datasource.url"));
+
         return "Just testing";
+    }
+
+    @Bean
+    @LoadBalanced
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
     }
 }

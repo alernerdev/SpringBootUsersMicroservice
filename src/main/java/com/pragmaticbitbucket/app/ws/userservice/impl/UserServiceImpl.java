@@ -2,11 +2,17 @@ package com.pragmaticbitbucket.app.ws.userservice.impl;
 
 import com.pragmaticbitbucket.app.ws.data.UserEntity;
 import com.pragmaticbitbucket.app.ws.data.UserRepository;
+import com.pragmaticbitbucket.app.ws.exceptions.UserServiceException;
 import com.pragmaticbitbucket.app.ws.shared.UserDto;
+import com.pragmaticbitbucket.app.ws.ui.model.response.AlbumsResponseModel;
 import com.pragmaticbitbucket.app.ws.userservice.UserService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,8 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.User;
 
 import com.pragmaticbitbucket.app.ws.shared.Utils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -23,15 +31,21 @@ public class UserServiceImpl implements UserService {
     private Utils utils;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private UserRepository userRepository;
+    private RestTemplate restTemplate;
+    private Environment env;
 
     @Autowired
     public UserServiceImpl(
             UserRepository userRepository,
             BCryptPasswordEncoder bCryptPasswordEncoder,
+            RestTemplate restTemplate,
+            Environment env,
             Utils utils) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.utils = utils;
+        this.restTemplate = restTemplate;
+        this.env = env;
     }
 
 
@@ -70,5 +84,23 @@ public class UserServiceImpl implements UserService {
 
         return new ModelMapper().map(userEntity, UserDto.class);
 
+    }
+
+    @Override
+    public UserDto getUserDetailsByUserId(String userId) {
+        UserEntity userEntity = userRepository.findByUserId(userId);
+        if (userEntity == null) throw new UsernameNotFoundException(userId);
+
+        UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
+
+        String albumsUrl = String.format(env.getProperty("albums.url"), userId);
+        // where albums-ws is the name of the service to look up in eureka
+        ResponseEntity<List<AlbumsResponseModel>> albumsListResponse =
+                restTemplate.exchange(albumsUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<AlbumsResponseModel>>() {
+                });
+        List<AlbumsResponseModel> albumsList = albumsListResponse.getBody();
+        userDto.setAlbums(albumsList);
+
+        return userDto;
     }
 }

@@ -50,10 +50,10 @@ public class UserController {
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
     public ResponseEntity<UserDetailsResponseModel> getUser(@PathVariable String publicUserId) {
-        if (users.containsKey(publicUserId))
-            return new ResponseEntity<UserDetailsResponseModel>(users.get(publicUserId), HttpStatus.OK);
-        else
-            return new ResponseEntity<UserDetailsResponseModel>(HttpStatus.NO_CONTENT);
+        UserDto userDto = userService.getUserDetailsByUserId(publicUserId);
+        UserDetailsResponseModel returnValue = new ModelMapper().map(userDto, UserDetailsResponseModel.class);
+
+        return ResponseEntity.status(HttpStatus.OK).body(returnValue);
     }
 
     @PostMapping(

@@ -25,7 +25,7 @@ public class UserEntity implements Serializable {
     private String encryptedPassword;
 
     @Column(nullable = false, unique = true)
-    private String UserId;
+    private String userId;
 
     public long getId() {
         return id;
@@ -68,10 +68,10 @@ public class UserEntity implements Serializable {
     }
 
     public String getUserId() {
-        return UserId;
+        return userId;
     }
 
     public void setUserId(String userId) {
-        UserId = userId;
+        this.userId = userId;
     }
 }
