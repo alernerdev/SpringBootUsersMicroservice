@@ -1,13 +1,17 @@
 package com.pragmaticbitbucket.app.ws.userservice.impl;
 
+import com.pragmaticbitbucket.app.ws.data.AlbumsServiceClient;
 import com.pragmaticbitbucket.app.ws.data.UserEntity;
 import com.pragmaticbitbucket.app.ws.data.UserRepository;
 import com.pragmaticbitbucket.app.ws.exceptions.UserServiceException;
 import com.pragmaticbitbucket.app.ws.shared.UserDto;
 import com.pragmaticbitbucket.app.ws.ui.model.response.AlbumsResponseModel;
 import com.pragmaticbitbucket.app.ws.userservice.UserService;
+import feign.FeignException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
@@ -31,20 +35,25 @@ public class UserServiceImpl implements UserService {
     private Utils utils;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private UserRepository userRepository;
-    private RestTemplate restTemplate;
+    // private RestTemplate restTemplate;
+    AlbumsServiceClient albumsServiceClient;
     private Environment env;
+
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public UserServiceImpl(
             UserRepository userRepository,
             BCryptPasswordEncoder bCryptPasswordEncoder,
-            RestTemplate restTemplate,
+            // RestTemplate restTemplate,
+            AlbumsServiceClient albumsServiceClient,
             Environment env,
             Utils utils) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.utils = utils;
-        this.restTemplate = restTemplate;
+        // this.restTemplate = restTemplate;
+        this.albumsServiceClient = albumsServiceClient;
         this.env = env;
     }
 
@@ -93,14 +102,28 @@ public class UserServiceImpl implements UserService {
 
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
 
+        // RestTemplate approach
+        /*
         String albumsUrl = String.format(env.getProperty("albums.url"), userId);
         // where albums-ws is the name of the service to look up in eureka
         ResponseEntity<List<AlbumsResponseModel>> albumsListResponse =
                 restTemplate.exchange(albumsUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<AlbumsResponseModel>>() {
                 });
         List<AlbumsResponseModel> albumsList = albumsListResponse.getBody();
-        userDto.setAlbums(albumsList);
+         */
 
+        // feign client approach
+        List<AlbumsResponseModel> albumsList=null;
+
+        /* instead of try/catch, I am now using FeignErrorDecoder */
+
+        //try {
+             albumsList = albumsServiceClient.getAlbums(userId);
+        //} catch (FeignException e) {
+        //    logger.error(e.getLocalizedMessage());
+        //}
+
+        userDto.setAlbums(albumsList);
         return userDto;
     }
 }
