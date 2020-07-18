@@ -118,7 +118,10 @@ public class UserServiceImpl implements UserService {
         /* instead of try/catch, I am now using FeignErrorDecoder */
 
         //try {
-             albumsList = albumsServiceClient.getAlbums(userId);
+            logger.info("before calling albums microservice");
+            albumsList = albumsServiceClient.getAlbums(userId);
+            logger.info("after calling albums microservice");
+
         //} catch (FeignException e) {
         //    logger.error(e.getLocalizedMessage());
         //}

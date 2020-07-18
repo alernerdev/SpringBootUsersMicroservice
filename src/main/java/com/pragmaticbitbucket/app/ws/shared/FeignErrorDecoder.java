@@ -27,7 +27,7 @@ public class FeignErrorDecoder implements ErrorDecoder {
                     if (methodKey.contains("getAlbums"))
                         return new ResponseStatusException(
                                     HttpStatus.valueOf(response.status()),
-                                    env.getProperty("albums.exceptions.albums-not-found");
+                                    env.getProperty("albums.exceptions.albums-not-found"));
 
                 default:
                     return new Exception(response.reason());
@@ -36,4 +36,3 @@ public class FeignErrorDecoder implements ErrorDecoder {
             return null;
         }
 }
-""
